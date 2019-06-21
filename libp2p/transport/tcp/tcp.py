@@ -70,23 +70,28 @@ class TCP(ITransport):
         :param multiaddr: multiaddr of peer
         :param self_id: peer_id of the dialer (to send to receiver)
         :param options: optional object
-        :return: True if successful
+        :return: `RawConnection` if successful
         """
         host = multiaddr.value_for_protocol('ip4')
         port = int(multiaddr.value_for_protocol('tcp'))
 
         reader, writer = await asyncio.open_connection(host, port)
 
-        # First: send our peer ID so receiver knows it
-        writer.write(id_b58_encode(self_id).encode())
-        await writer.drain()
+        # # where we store the peers' `peer_id`?
+        # # First: send our peer ID so receiver knows it
+        # writer.write(id_b58_encode(self_id).encode())
+        # print(f"!@# writer.write: {id_b58_encode(self_id)}")
+        # await writer.drain()
 
-        # Await ack for peer id
-        expected_ack_str = "received peer id"
-        ack = (await reader.read(len(expected_ack_str))).decode()
+        # # Await ack for peer id
+        # expected_ack_str = "received peer id"
+        # expected_ack_str = "\x13"  # /multistream/1.0.0"
+        # ack = (await reader.read(len(expected_ack_str))).decode()
 
-        if ack != expected_ack_str:
-            raise Exception("Receiver did not receive peer id")
+        # print("!@# reader.read: {!r}".format(ack))
+        # if ack != expected_ack_str:
+        #     print(f"!@# ack={ack}, expected_ack_str={expected_ack_str}")
+        #     raise Exception("Receiver did not receive peer id")
 
         return RawConnection(host, port, reader, writer, True)
 

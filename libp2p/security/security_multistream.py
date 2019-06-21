@@ -1,4 +1,3 @@
-from abc import ABC
 from libp2p.protocol_muxer.multiselect_client import MultiselectClient
 from libp2p.protocol_muxer.multiselect import Multiselect
 
@@ -10,7 +9,7 @@ involved in the secured connection
 
 Relevant go repo: https://github.com/libp2p/go-conn-security/blob/master/interface.go
 """
-class SecurityMultistream(ABC):
+class SecurityMultistream:
 
     def __init__(self):
         # Map protocol to secure transport
@@ -31,7 +30,6 @@ class SecurityMultistream(ABC):
         # we only care about selecting the protocol, not any handler function
         self.multiselect.add_handler(protocol, None)
 
-
     async def secure_inbound(self, conn):
         """
         Secure the connection, either locally or by communicating with opposing node via conn,
@@ -47,7 +45,6 @@ class SecurityMultistream(ABC):
 
         return secure_conn
 
-
     async def secure_outbound(self, conn, peer_id):
         """
         Secure the connection, either locally or by communicating with opposing node via conn,
@@ -62,7 +59,6 @@ class SecurityMultistream(ABC):
         secure_conn = await transport.secure_outbound(conn, peer_id)
 
         return secure_conn
-
 
     async def select_transport(self, conn, initiator):
         """

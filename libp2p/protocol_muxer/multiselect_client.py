@@ -1,9 +1,27 @@
+from libp2p.stream_muxer.mplex.utils import (
+    decode_uvarint_from_stream,
+    encode_uvarint,
+)
+
 from .multiselect_client_interface import IMultiselectClient
 from .multiselect_communicator import MultiselectCommunicator
 
 
 MULTISELECT_PROTOCOL_ID = "/multistream/1.0.0"
 PROTOCOL_NOT_FOUND_MSG = "na"
+
+
+async def delim_write(writer, msg):
+    varint_len_msg = encode_uvarint(len(msg) + 1)
+    writer.write(varint_len_msg + msg.encode() + b"\n")
+    await writer.drain()
+
+
+async def delim_read(reader):
+    timeout = 10
+    len_msg_server = await decode_uvarint_from_stream(reader, timeout)
+    msg_bytes = await reader.read(len_msg_server)
+    return msg_bytes.decode().rstrip()
 
 
 class MultiselectClient(IMultiselectClient):
@@ -26,11 +44,14 @@ class MultiselectClient(IMultiselectClient):
         # TODO: Use format used by go repo for messages
 
         # Send our MULTISELECT_PROTOCOL_ID to counterparty
-        await communicator.write(MULTISELECT_PROTOCOL_ID)
+        rwtor = communicator.reader_writer
+        await delim_write(rwtor.writer, MULTISELECT_PROTOCOL_ID)
 
         # Read in the protocol ID from other party
-        handshake_contents = await communicator.read_stream_until_eof()
+        # handshake_contents = await communicator.read_stream_until_eof()
+        handshake_contents = await delim_read(rwtor.reader)
 
+        print(f"!@# handshake_contents={handshake_contents}")
         # Confirm that the protocols are the same
         if not validate_handshake(handshake_contents):
             raise MultiselectClientError("multiselect protocol ID mismatch")
@@ -94,10 +115,13 @@ class MultiselectClient(IMultiselectClient):
         """
 
         # Tell counterparty we want to use protocol
-        await communicator.write(protocol)
+        # await communicator.write(protocol)
+        rwtor = communicator.reader_writer
+        await delim_write(rwtor.writer, protocol)
 
         # Get what counterparty says in response
-        response = await communicator.read_stream_until_eof()
+        # response = await communicator.read_stream_until_eof()
+        response = await delim_read(rwtor.reader)
 
         # Return protocol if response is equal to protocol or raise error
         if response == protocol:

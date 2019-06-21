@@ -92,7 +92,7 @@ class GossipSub(IPubsubRouter):
         """
         control_message = rpc.control
 
-        # Relay each rpc control  to the appropriate handler
+        # Relay each rpc control to the appropriate handler
         if control_message.ihave:
             for ihave in control_message.ihave:
                 await self.handle_ihave(ihave, sender_peer_id)

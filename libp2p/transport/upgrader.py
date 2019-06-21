@@ -8,9 +8,8 @@ class TransportUpgrader:
     def __init__(self, secOpt, muxerOpt):
         # Store security option
         self.security_multistream = SecurityMultistream()
-        for key in secOpt:
-            self.security_multistream.add_transport(key, secOpt[key])
-
+        for key, value in secOpt.items():
+            self.security_multistream.add_transport(key, value)
         # Store muxer option
         self.muxer = muxerOpt
 
