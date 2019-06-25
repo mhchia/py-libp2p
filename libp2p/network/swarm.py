@@ -71,12 +71,17 @@ class Swarm(INetwork):
             # Dial peer (connection to peer does not yet exist)
             # Transport dials peer (gets back a raw conn)
             raw_conn = await self.transport.dial(multiaddr, self.self_id)
+            print(f"!@# raw_conn = {raw_conn}")
 
             # Per, https://discuss.libp2p.io/t/multistream-security/130, we first secure
             # the conn and then mux the conn
             secured_conn = await self.upgrader.upgrade_security(raw_conn, peer_id, True)
-            muxed_conn = self.upgrader.upgrade_connection(secured_conn, \
-                self.generic_protocol_handler, peer_id)
+            muxed_conn = await self.upgrader.upgrade_connection(
+                secured_conn,
+                self.generic_protocol_handler,
+                peer_id,
+                True,
+            )
 
             # Store muxed connection in connections
             self.connections[peer_id] = muxed_conn
@@ -154,8 +159,12 @@ class Swarm(INetwork):
                 # Per, https://discuss.libp2p.io/t/multistream-security/130, we first secure
                 # the conn and then mux the conn
                 secured_conn = await self.upgrader.upgrade_security(raw_conn, peer_id, False)
-                muxed_conn = self.upgrader.upgrade_connection(secured_conn, \
-                    self.generic_protocol_handler, peer_id)
+                muxed_conn = await self.upgrader.upgrade_connection(
+                    secured_conn,
+                    self.generic_protocol_handler,
+                    peer_id,
+                    False,
+                )
 
                 # Store muxed_conn with peer id
                 self.connections[peer_id] = muxed_conn
@@ -219,6 +228,7 @@ def create_generic_protocol_handler(swarm):
         asyncio.ensure_future(handler(net_stream))
 
     return generic_protocol_handler
+
 
 class SwarmException(Exception):
     pass

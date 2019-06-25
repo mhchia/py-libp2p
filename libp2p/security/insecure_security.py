@@ -24,6 +24,7 @@ class InsecureTransport(ISecureTransport):
         insecure_conn = InsecureConn(conn, self.transport_id)
         return insecure_conn
 
+
 class InsecureConn(ISecureConn):
 
     def __init__(self, conn, conn_id):

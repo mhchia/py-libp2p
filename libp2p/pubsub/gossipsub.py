@@ -401,8 +401,6 @@ class GossipSub(IPubsubRouter):
         """
         Checks the seen set and requests unknown messages with an IWANT message.
         """
-        # from_id_bytes = ihave_msg.from_id
-
         from_id_str = sender_peer_id
 
         # Get list of all seen (seqnos, from) from the (seqno, from) tuples in seen_messages cache

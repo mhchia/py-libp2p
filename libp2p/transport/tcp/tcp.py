@@ -64,6 +64,7 @@ class TCP(ITransport):
             self.server = None
             return True
 
+    # FIXME: remove `self_id`
     async def dial(self, multiaddr, self_id, options=None):
         """
         dial a transport to peer listening on multiaddr
@@ -74,25 +75,7 @@ class TCP(ITransport):
         """
         host = multiaddr.value_for_protocol('ip4')
         port = int(multiaddr.value_for_protocol('tcp'))
-
         reader, writer = await asyncio.open_connection(host, port)
-
-        # # where we store the peers' `peer_id`?
-        # # First: send our peer ID so receiver knows it
-        # writer.write(id_b58_encode(self_id).encode())
-        # print(f"!@# writer.write: {id_b58_encode(self_id)}")
-        # await writer.drain()
-
-        # # Await ack for peer id
-        # expected_ack_str = "received peer id"
-        # expected_ack_str = "\x13"  # /multistream/1.0.0"
-        # ack = (await reader.read(len(expected_ack_str))).decode()
-
-        # print("!@# reader.read: {!r}".format(ack))
-        # if ack != expected_ack_str:
-        #     print(f"!@# ack={ack}, expected_ack_str={expected_ack_str}")
-        #     raise Exception("Receiver did not receive peer id")
-
         return RawConnection(host, port, reader, writer, True)
 
     def create_listener(self, handler_function, options=None):
