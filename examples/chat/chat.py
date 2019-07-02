@@ -2,11 +2,14 @@ import asyncio
 import sys
 import urllib.request
 
+from Crypto.PublicKey import RSA
 import click
 import multiaddr
 
 from libp2p import new_node
+from libp2p.peer.id import id_from_public_key
 from libp2p.peer.peerinfo import info_from_p2p_addr
+from libp2p.protocol.identify import id as id_protocol
 
 
 PROTOCOL_ID = '/chat/1.0.0'
@@ -34,10 +37,19 @@ async def run(port, destination):
     external_ip = urllib.request.urlopen(
         'https://v4.ident.me/').read().decode('utf8')
     transport_opt = "/ip4/%s/tcp/%s" % (external_ip, port)
+    key = RSA.generate(2048, e=65537)
+    id_opt = id_from_public_key(key.publickey())
     host = await new_node(
-        transport_opt=[transport_opt])
+        transport_opt=[transport_opt],
+        id_opt=id_opt,
+    )
+    # FIXME: should add it in KeyBook, but it doesn't exist for now.
+    host.privkey = key
 
     await host.get_network().listen(multiaddr.Multiaddr(transport_opt))
+    # support Identify
+    id_service = id_protocol.IdentifyService(host=host)
+    host.set_stream_handler(id_protocol.PROTOCOL_ID, id_service.request_handler)
 
     if not destination:  # its the server
         async def stream_handler(stream):

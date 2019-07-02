@@ -35,6 +35,7 @@ class IdentifyService:
             unhexlify(maddr.to_bytes())
             for maddr in self.host.get_addrs()
         )
+        # FIXME: should get it from KeyBook, but it doesn't exist for now.
         pubkey = self.host.privkey.publickey()
         pubkey_bytes = pubkey.exportKey("DER")
         pubkey_pb = crypto_pb2.PublicKey(

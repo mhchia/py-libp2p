@@ -20,6 +20,7 @@ class Swarm(INetwork):
         self.router = router
         self.connections = dict()
         self.listeners = dict()
+        # !@# unused?
         self.stream_handlers = dict()
 
         # Protocol muxing

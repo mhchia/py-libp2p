@@ -1,5 +1,9 @@
 import asyncio
 
+from libp2p.protocol_muxer.utils import (
+    delim_read,
+)
+
 from .utils import encode_uvarint, decode_uvarint_from_stream, get_flag
 from .mplex_stream import MplexStream
 from ..muxed_connection_interface import IMuxedConn
@@ -14,7 +18,7 @@ class Mplex(IMuxedConn):
     def __init__(self, secured_conn, generic_protocol_handler, peer_id):
         """
         create a new muxed connection
-        :param conn: an instance of raw connection
+        :param secured_conn: an instance of raw connection
         :param generic_protocol_handler: generic protocol handler
         for new muxed streams
         :param peer_id: peer_id of peer the connection is to
@@ -129,19 +133,24 @@ class Mplex(IMuxedConn):
         # TODO Deal with other types of messages using flag (currently _)
 
         while True:
+            # FIXME: This is blocked only for `timeout` time, which consumes unnecessary CPUs.
             stream_id, flag, message = await self.read_message()
+            print(f"!@# stream_id={stream_id}, flag={flag}, message={message}")
 
             if stream_id is not None and flag is not None and message is not None:
                 if stream_id not in self.buffers:
                     self.buffers[stream_id] = asyncio.Queue()
                     await self.stream_queue.put(stream_id)
 
-                if flag is get_flag(True, "NEW_STREAM"):
+                if flag == get_flag(True, "NEW_STREAM"):
                     # new stream detected on connection
                     await self.accept_stream()
 
                 if message:
-                    await self.buffers[stream_id].put(message)
+                    # FIXME: Added to prevent the initial `b"0"` goes into the queue.
+                    #  Need to find out what `b"0"` mean.
+                    if flag != get_flag(True, "NEW_STREAM"):
+                        await self.buffers[stream_id].put(message)
 
             # Force context switch
             await asyncio.sleep(0)

@@ -1,6 +1,11 @@
 from .multiselect_muxer_interface import IMultiselectMuxer
 from .multiselect_communicator import MultiselectCommunicator
-
+from .utils import (
+    delim_read,
+    delim_write,
+    encode_delim,
+    encode_uvarint,
+)
 
 MULTISELECT_PROTOCOL_ID = "/multistream/1.0.0"
 PROTOCOL_NOT_FOUND_MSG = "na"
@@ -40,7 +45,9 @@ class Multiselect(IMultiselectMuxer):
         # Read and respond to commands until a valid protocol ID is sent
         while True:
             # Read message
-            command = await communicator.read_stream_until_eof()
+            print("!@# Multiselect.negotiate.read: wait for command")
+            command = await delim_read(communicator.reader_writer)
+            print(f"!@# Multiselect.negotiate.read: command={command}")
 
             # Command is ls or a protocol
             if command == "ls":
@@ -49,13 +56,14 @@ class Multiselect(IMultiselectMuxer):
             else:
                 protocol = command
                 if protocol in self.handlers:
+                    print(f"!@# protocol={protocol}")
                     # Tell counterparty we have decided on a protocol
-                    await communicator.write(protocol)
+                    await communicator.write(encode_delim(protocol).decode())
 
                     # Return the decided on protocol
                     return protocol, self.handlers[protocol]
                 # Tell counterparty this protocol was not found
-                await communicator.write(PROTOCOL_NOT_FOUND_MSG)
+                await communicator.write(encode_delim(PROTOCOL_NOT_FOUND_MSG).decode())
 
     async def handshake(self, communicator):
         """
@@ -66,11 +74,15 @@ class Multiselect(IMultiselectMuxer):
 
         # TODO: Use format used by go repo for messages
 
+        print("!@# multiselect-server.handshake: writing `PROTOCOL_ID`")
         # Send our MULTISELECT_PROTOCOL_ID to other party
-        await communicator.write(MULTISELECT_PROTOCOL_ID)
+        await communicator.write(encode_delim(MULTISELECT_PROTOCOL_ID).decode())
+        print(f"!@# type(communicator)={type(communicator.reader_writer)}")
 
         # Read in the protocol ID from other party
-        handshake_contents = await communicator.read_stream_until_eof()
+        print("!@# multiselect-server.handshake: wait for handshake_contents")
+        handshake_contents = await delim_read(communicator.reader_writer)
+        print(f"!@# multiselect-server.handshake: handshake_contents={handshake_contents}")
 
         # Confirm that the protocols are the same
         if not validate_handshake(handshake_contents):

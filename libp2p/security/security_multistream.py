@@ -10,6 +10,10 @@ involved in the secured connection
 Relevant go repo: https://github.com/libp2p/go-conn-security/blob/master/interface.go
 """
 class SecurityMultistream:
+    """
+    SSMuxer is a multistream stream security transport multiplexer.
+    go impl.: github.com/libp2p/go-conn-security-multistream/ssms.go
+    """
 
     def __init__(self):
         # Map protocol to secure transport
@@ -53,6 +57,7 @@ class SecurityMultistream:
         """
 
         # Select a secure transport
+        print(f"!@# self.transports={self.transports}")
         transport = await self.select_transport(conn, True)
 
         # Create secured connection
