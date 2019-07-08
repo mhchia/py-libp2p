@@ -30,6 +30,7 @@ async def cleanup_done_tasks():
         await asyncio.sleep(3)
 
 def generate_id():
+    # FIXME: store the key in peerstore?
     new_key = RSA.generate(2048, e=65537)
     new_id = id_from_public_key(new_key.publickey())
     # private_key = new_key.exportKey("PEM")

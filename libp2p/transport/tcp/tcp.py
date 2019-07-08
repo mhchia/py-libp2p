@@ -12,6 +12,7 @@ from ..transport_interface import ITransport
 class TCP(ITransport):
 
     def __init__(self):
+        # !@# without `handler_function`?
         self.listener = self.Listener()
 
     class Listener(IListener):

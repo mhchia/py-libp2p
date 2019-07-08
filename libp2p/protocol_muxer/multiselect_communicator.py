@@ -29,3 +29,6 @@ class MultiselectCommunicator(IMultiselectCommunicator):
         """
         read_str = (await self.reader_writer.read()).decode()
         return read_str
+
+    async def read_msg_from_stream(self):
+        return (await self.reader_writer.read_msg()).decode()

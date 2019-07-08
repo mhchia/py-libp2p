@@ -35,6 +35,7 @@ async def decode_uvarint_from_stream(reader, timeout):
     result = 0
     while True:
         byte = await asyncio.wait_for(reader.read(1), timeout=timeout)
+        print(f"!@# decode_uvarint_from_stream: byte={byte}")
         i = struct.unpack('>H', b'\x00' + byte)[0]
         result |= (i & 0x7f) << shift
         shift += 7
@@ -49,6 +50,7 @@ def get_flag(initiator, action):
     :param action: action type in str
     :return: int flag
     """
+    # or `action == "NewStream" ?
     if initiator or HEADER_TAGS[action] == 0:
         return HEADER_TAGS[action]
 

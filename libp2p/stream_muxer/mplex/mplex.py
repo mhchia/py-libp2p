@@ -23,6 +23,7 @@ class Mplex(IMuxedConn):
         for new muxed streams
         :param peer_id: peer_id of peer the connection is to
         """
+        # !@# does it really work?
         super(Mplex, self).__init__(secured_conn, generic_protocol_handler, peer_id)
 
         self.secured_conn = secured_conn
@@ -73,6 +74,8 @@ class Mplex(IMuxedConn):
         # Stream not created yet
         return None
 
+    # async def read_buffer_n(self, stream_id):
+
     async def open_stream(self, protocol_id, multi_addr):
         """
         creates a new muxed_stream
@@ -89,9 +92,11 @@ class Mplex(IMuxedConn):
     async def accept_stream(self):
         """
         accepts a muxed stream opened by the other end
-        :return: the accepted stream
+        :return: the accepted stream  !@# no return value here?
         """
+        print("!@# mplex.accept_stream: begin")
         stream_id = await self.stream_queue.get()
+        print("!@# mplex.accept_stream: after get")
         stream = MplexStream(stream_id, False, self)
         asyncio.ensure_future(self.generic_protocol_handler(stream))
 
@@ -99,6 +104,7 @@ class Mplex(IMuxedConn):
         """
         sends a message over the connection
         :param header: header to use
+        :param flag: !@# to be completed
         :param data: data to send in the message
         :param stream_id: stream the message is in
         :return: True if success
@@ -144,6 +150,7 @@ class Mplex(IMuxedConn):
 
                 if flag == get_flag(True, "NEW_STREAM"):
                     # new stream detected on connection
+                    print("!@# NEW_STREAM")
                     await self.accept_stream()
 
                 if message:
@@ -168,6 +175,7 @@ class Mplex(IMuxedConn):
             header = await decode_uvarint_from_stream(self.raw_conn.reader, timeout)
             length = await decode_uvarint_from_stream(self.raw_conn.reader, timeout)
             message = await asyncio.wait_for(self.raw_conn.reader.read(length), timeout=timeout)
+            print(f"!@# mplex.read_message: header={header}, length={length}, message={message}")
         except asyncio.TimeoutError:
             return None, None, None
 

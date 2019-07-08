@@ -103,6 +103,7 @@ async def test_chat(test):
     (host_a, host_b) = await set_up_nodes_by_transport_opt(transport_opt_list)
 
     addr = host_a.get_addrs()[0]
+    print(f"!@# addr={addr}")
     info = info_from_p2p_addr(addr)
     await host_b.connect(info)
 

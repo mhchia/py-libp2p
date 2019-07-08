@@ -22,6 +22,7 @@ class RawConnection(IRawConnection):
     async def write(self, data):
         self.writer.write(data)
         self.writer.write("\n".encode())
+        print(f"!@# conn.write: {data}")
         await self.writer.drain()
 
     async def read(self):
@@ -30,7 +31,9 @@ class RawConnection(IRawConnection):
 
         # TODO: figure out a way to remove \n without going back and forth with
         # encoding and decoding
-        return adjusted_line.encode()
+        line = adjusted_line.encode()
+        print(f"!@# conn.read: {line}")
+        return line
 
     def close(self):
         self.writer.close()
