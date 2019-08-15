@@ -19,6 +19,8 @@ class MplexStream(IMuxedStream):
     remote_closed: bool
     stream_lock: asyncio.Lock
 
+    _buf: bytearray
+
     def __init__(self, stream_id: int, initiator: bool, mplex_conn: IMuxedConn) -> None:
         """
         create new MuxedStream in muxer
@@ -34,13 +36,42 @@ class MplexStream(IMuxedStream):
         self.local_closed = False
         self.remote_closed = False
         self.stream_lock = asyncio.Lock()
+        self._buf = bytearray()
 
-    async def read(self) -> bytes:
+    async def read(self, n: int = -1) -> bytes:
         """
-        read messages associated with stream from buffer til end of file
-        :return: bytes of input
+        Read up to n bytes. Read possibly returns fewer than `n` bytes,
+        if there are not enough bytes in the Mplex buffer.
+        If `n == -1`, read until EOF.
+        :param n: number of bytes to read
+        :return: bytes actually read
         """
-        return await self.mplex_conn.read_buffer(self.stream_id)
+        if n < 0 and n != -1:
+            raise ValueError("`n` can only be -1 if it is negative")
+        # If the buffer is empty at first, blocking wait for data.
+        if len(self._buf) == 0:
+            self._buf.extend(await self.mplex_conn.read_buffer(self.stream_id))
+        # Sanity check: `self._buf` should never be empty here.
+        if self._buf is None or len(self._buf) == 0:
+            raise Exception("`self._buf` should never be empty here")
+
+        # FIXME: If `n == -1`, we should blocking read until EOF, instead of returning when
+        #   no message is available.
+        # If `n >= 0`, read up to `n` bytes.
+        # Else, read until no message is available.
+        while len(self._buf) < n or n == -1:
+            new_bytes = await self.mplex_conn.read_buffer_nonblocking(self.stream_id)
+            if new_bytes is None:
+                # Nothing to read in the `MplexConn` buffer
+                break
+            self._buf.extend(new_bytes)
+        payload: bytearray
+        if n == -1:
+            payload = self._buf
+        else:
+            payload = self._buf[:n]
+        self._buf = self._buf[len(payload) :]
+        return bytes(payload)
 
     async def write(self, data: bytes) -> int:
         """

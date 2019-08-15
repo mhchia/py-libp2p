@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from multiaddr import Multiaddr
 
@@ -57,6 +57,12 @@ class IMuxedConn(ABC):
         """
 
     @abstractmethod
+    async def read_buffer_nonblocking(self, stream_id: int) -> Optional[bytes]:
+        """
+        Read a message from `stream_id`'s buffer, non-blockingly.
+        """
+
+    @abstractmethod
     async def open_stream(
         self, protocol_id: str, multi_addr: Multiaddr
     ) -> "IMuxedStream":
@@ -88,9 +94,10 @@ class IMuxedStream(ABC):
     mplex_conn: IMuxedConn
 
     @abstractmethod
-    async def read(self) -> bytes:
+    async def read(self, n: int = -1) -> bytes:
         """
         reads from the underlying muxed_conn
+        :param n: number of bytes to read
         :return: bytes of input
         """
 
