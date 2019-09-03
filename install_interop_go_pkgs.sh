@@ -13,7 +13,7 @@ go version
 # Install `p2pd`
 # FIXME: Use the canonical repo in libp2p, when we don't need `insecure`.
 if [ ! -e "$DAEMON_PATH" ]; then
-    git clone https://github.com:mhchia/$DAEMON_REPO.git --branch test/add-options $DAEMON_PATH
+    git clone https://github.com/mhchia/$DAEMON_REPO.git --branch test/add-options $DAEMON_PATH
     if [ "$?" != 0 ]; then
         echo "Failed to clone the daemon repo"
         exit 1
