@@ -20,6 +20,10 @@ class ExternalAPIService(Service):
             await wait_return.wait()
         return 7
 
+    @external_api
+    def get_7_sync(self):
+        return 7
+
 
 @pytest.mark.trio
 async def test_asyncio_service_external_api_fails_before_start():
@@ -97,4 +101,15 @@ async def test_asyncio_service_external_api_raises_when_finished():
     # A direct call should also fail.  This *should* be hitting the early
     # return mechanism.
     with pytest.raises(ServiceCancelled):
-        assert await service.get_7()
+        assert (await service.get_7()) == 7
+
+
+@pytest.mark.trio
+async def test_asyncio_service_external_api_sync_function():
+    service = ExternalAPIService()
+
+    async with background_trio_service(service):
+        assert service.get_7_sync() == 7
+
+    with pytest.raises(ServiceCancelled):
+        service.get_7_sync()
