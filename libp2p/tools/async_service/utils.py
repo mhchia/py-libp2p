@@ -77,7 +77,8 @@ def _wrap_sync_func(func: TFunc) -> TFunc:
 
 
 def external_api(func: TFunc) -> TFunc:
-    """Trio's version of `async_service.external_api`, except that it supports sync function as well."""
+    """Trio's version of `async_service.external_api`, except that it supports
+    sync function as well."""
     if inspect.iscoroutinefunction(func):
         return _wrap_async_func(func)
     else:

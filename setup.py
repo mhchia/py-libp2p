@@ -71,6 +71,7 @@ setuptools.setup(
         "trio-asyncio>=0.10.0",
         "trio>=0.13.0",
         "async-service>=0.1.0a2,<0.2.0",
+        "async-exit-stack==1.0.1",
     ],
     extras_require=extras_require,
     packages=setuptools.find_packages(exclude=["tests", "tests.*"]),

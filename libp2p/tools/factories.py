@@ -1,6 +1,7 @@
-from contextlib import AsyncExitStack, asynccontextmanager
 from typing import Any, AsyncIterator, Dict, Sequence, Tuple, cast
 
+from async_exit_stack import AsyncExitStack
+from async_generator import asynccontextmanager
 from async_service import background_trio_service
 import factory
 import trio
