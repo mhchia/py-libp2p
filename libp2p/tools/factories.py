@@ -1,7 +1,11 @@
 from typing import Any, AsyncIterator, Dict, List, Sequence, Tuple, cast
 
 from async_exit_stack import AsyncExitStack
-from async_generator import asynccontextmanager
+
+try:
+    from contextlib import asynccontextmanager
+except ImportError:
+    from async_generator import asynccontextmanager
 from async_service import background_trio_service
 import factory
 from multiaddr import Multiaddr

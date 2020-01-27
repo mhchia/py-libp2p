@@ -1,6 +1,9 @@
 from typing import AsyncIterator, Sequence
 
-from async_generator import asynccontextmanager
+try:
+    from contextlib import asynccontextmanager
+except ImportError:
+    from async_generator import asynccontextmanager
 from async_service import background_trio_service
 
 from libp2p.crypto.keys import KeyPair

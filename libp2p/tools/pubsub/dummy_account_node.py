@@ -1,7 +1,11 @@
 from typing import AsyncIterator, Dict, Tuple
 
 from async_exit_stack import AsyncExitStack
-from async_generator import asynccontextmanager
+
+try:
+    from contextlib import asynccontextmanager
+except ImportError:
+    from async_generator import asynccontextmanager
 from async_service import Service, background_trio_service
 
 from libp2p.host.host_interface import IHost

@@ -1,6 +1,9 @@
 from typing import AsyncIterator
 
-from async_generator import asynccontextmanager
+try:
+    from contextlib import asynccontextmanager
+except ImportError:
+    from async_generator import asynccontextmanager
 import multiaddr
 from multiaddr import Multiaddr
 from p2pclient import Client
